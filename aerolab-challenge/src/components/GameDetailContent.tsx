@@ -19,6 +19,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface GameDetailContentProps {
   game: Game;
@@ -29,6 +30,7 @@ export function GameDetailContent({
   game,
   similarGames,
 }: GameDetailContentProps) {
+  const { theme } = useTheme();
   const { addGame, removeGame, isInCollection, isClient } = useGameCollection();
   const [showNotification, setShowNotification] = useState<string | null>(null);
 
@@ -157,10 +159,12 @@ export function GameDetailContent({
               onClick={handleCollectionToggle}
               disabled={!isClient}
               className={cn(
-                "inline-flex items-center px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105",
+                "cursor-pointer inline-flex items-center px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105",
                 isCollected
                   ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-gradient-to-r from-primary-500 to-secondary-600 text-white hover:from-primary-600 hover:to-secondary-700",
+                  : `bg-gradient-to-r ${
+                      theme === "dark" ? "light" : "dark"
+                    } from-primary-500 to-secondary-600 inverted-text-theme hover:from-primary-600 hover:to-secondary-700`,
                 !isClient && "opacity-50 cursor-not-allowed"
               )}
             >

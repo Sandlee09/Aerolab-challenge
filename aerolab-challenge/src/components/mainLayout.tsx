@@ -13,7 +13,7 @@ export default function MainLayout({
   return (
     <div
       className={`min-h-screen ${
-        theme === "dark" ? "dark light-text" : "light dark-text"
+        theme === "dark" ? "dark" : "light"
       } transition-colors duration-200`}
     >
       <Header />

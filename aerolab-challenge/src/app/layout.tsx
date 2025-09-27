@@ -4,6 +4,8 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import MainLayout from "../components/mainLayout";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { LoadingProvider } from "@/contexts/LoadingContext";
+import { GlobalLoadingOverlay } from "@/components/GlobalLoadingOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,7 +47,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <MainLayout>{children}</MainLayout>
+          <LoadingProvider>
+            <MainLayout>{children}</MainLayout>
+            <GlobalLoadingOverlay />
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

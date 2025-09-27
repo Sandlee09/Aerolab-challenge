@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Game } from "@/types/game";
 import { getImageUrl } from "@/lib/igdb";
-import { formatDate } from "@/lib/utils";
+import { formatDate, createSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { useLoading } from "@/contexts/LoadingContext";
 
 interface GameCardProps {
   game: Game;
@@ -20,17 +22,29 @@ export function GameCard({
   className,
 }: GameCardProps) {
   const { theme } = useTheme();
+  const { startNavigationLoading } = useLoading();
+  const router = useRouter();
   const coverUrl = game.cover
     ? getImageUrl(game.cover.image_id, "cover_big")
     : null;
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startNavigationLoading("Loading game...");
+
+    // Navigate programmatically
+    const href = `/game/${game.id}/${createSlug(game.name)}`;
+    router.push(href);
+  };
+
   return (
     <Link
       href={`/game/${game.id}/${createSlug(game.name)}`}
+      onClick={handleClick}
       className={cn(
         `group block ${
           theme === "dark" ? "light" : "dark"
-        } rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-dark-600`,
+        } rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-600`,
         className
       )}
     >
@@ -44,7 +58,7 @@ export function GameCard({
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
         ) : (
-          <div className="w-full h-full bg-gray-200 dark:bg-dark-700 flex items-center justify-center">
+          <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
             <span className="text-gray-500 dark:text-gray-400 text-sm">
               No cover
             </span>
@@ -52,7 +66,7 @@ export function GameCard({
         )}
       </div>
       <div className="p-3">
-        <h3 className="font-semibold text-sm !inverted-theme line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <h3 className="font-semibold text-sm !text-theme line-clamp-2 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
           {game.name}
         </h3>
         {showReleaseDate && game.first_release_date && (
@@ -63,13 +77,4 @@ export function GameCard({
       </div>
     </Link>
   );
-}
-
-function createSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
 }
