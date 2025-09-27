@@ -17,15 +17,42 @@ export function useGameCollection() {
   useEffect(() => {
     setIsClient(true);
     const storedCollection = getStoredCollection();
-    setCollection(storedCollection);
+    
+    // Add timestamps to existing games that don't have them
+    const migratedCollection: GameCollection = {};
+    let hasChanges = false;
+    
+    Object.entries(storedCollection).forEach(([gameId, game], index) => {
+      if (!(game as any).dateAdded) {
+        // Add timestamp based on order in collection (older games get earlier timestamps)
+        const timestamp = Date.now() - (Object.keys(storedCollection).length - index) * 1000;
+        migratedCollection[gameId] = { ...game, dateAdded: timestamp };
+        hasChanges = true;
+      } else {
+        migratedCollection[gameId] = game;
+      }
+    });
+    
+    if (hasChanges) {
+      // Save migrated collection
+      localStorage.setItem('aerolab-game-collection', JSON.stringify(migratedCollection));
+      setCollection(migratedCollection);
+    } else {
+      setCollection(storedCollection);
+    }
+    
     setIsLoading(false);
   }, []);
 
   // Add game to collection
   const addGame = useCallback((game: Game) => {
     if (!isClient) return;
-    addGameToCollection(game);
-    setCollection(prev => ({ ...prev, [game.id]: game }));
+    const gameWithTimestamp = {
+      ...game,
+      dateAdded: Date.now() // Add timestamp when game is added
+    };
+    addGameToCollection(gameWithTimestamp);
+    setCollection(prev => ({ ...prev, [game.id]: gameWithTimestamp }));
   }, [isClient]);
 
   // Remove game from collection
@@ -70,8 +97,12 @@ export function useGameCollection() {
       });
     }
     
-    // Default: sort by date added (most recent first)
-    return games.sort((a, b) => b.id - a.id);
+    // Sort by date added (oldest first - chronological order)
+    return games.sort((a, b) => {
+      const dateA = (a as any).dateAdded || 0;
+      const dateB = (b as any).dateAdded || 0;
+      return dateA - dateB; // Oldest added first
+    });
   }, [isClient]);
 
   return {
