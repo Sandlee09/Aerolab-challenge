@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { ImageGallery } from "./ImageGallery";
 
 interface GameDetailContentProps {
   game: Game;
@@ -33,6 +34,8 @@ export function GameDetailContent({
   const { theme } = useTheme();
   const { addGame, removeGame, isInCollection, isClient } = useGameCollection();
   const [showNotification, setShowNotification] = useState<string | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   const isCollected = isClient ? isInCollection(game.id) : false;
   const coverUrl = game.cover
@@ -55,11 +58,6 @@ export function GameDetailContent({
     setTimeout(() => setShowNotification(null), 3000);
   };
 
-  const handleGameSelect = (selectedGame: SearchResult) => {
-    const slug = createSlug(selectedGame.name);
-    window.location.href = `/game/${selectedGame.id}/${slug}`;
-  };
-
   return (
     <div className="space-y-8">
       {/* Back Button */}
@@ -70,7 +68,6 @@ export function GameDetailContent({
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to Collection
       </Link>
-
       {/* Game Header */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Game Cover */}
@@ -191,12 +188,14 @@ export function GameDetailContent({
           )}
         </div>
       </div>
-
       {/* Screenshots */}
       {screenshots.length > 0 && (
         <div>
           <h2 className="text-2xl font-bold text-theme mb-6">Screenshots</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            onClick={() => setIsGalleryOpen(true)}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             {screenshots.map((screenshot, index) => (
               <div
                 key={screenshot.id}
@@ -214,7 +213,6 @@ export function GameDetailContent({
           </div>
         </div>
       )}
-
       {/* Similar Games */}
       {similarGames.length > 0 && (
         <div>
@@ -226,7 +224,6 @@ export function GameDetailContent({
           </div>
         </div>
       )}
-
       {/* Notification */}
       {showNotification && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-2">
@@ -236,6 +233,15 @@ export function GameDetailContent({
           </div>
         </div>
       )}
+      {/* Image Gallery Modal */}
+      <ImageGallery
+        images={screenshots}
+        gameName={game.name}
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        initialIndex={galleryIndex}
+      />
+      ;
     </div>
   );
 }
