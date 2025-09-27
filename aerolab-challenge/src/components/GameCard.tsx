@@ -1,10 +1,12 @@
 "use client";
-import Image from 'next/image';
-import Link from 'next/link';
-import { Game } from '@/types/game';
-import { getImageUrl } from '@/lib/igdb';
-import { formatDate } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+
+import Image from "next/image";
+import Link from "next/link";
+import { Game } from "@/types/game";
+import { getImageUrl } from "@/lib/igdb";
+import { formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface GameCardProps {
   game: Game;
@@ -12,14 +14,23 @@ interface GameCardProps {
   className?: string;
 }
 
-export function GameCard({ game, showReleaseDate = false, className }: GameCardProps) {
-  const coverUrl = game.cover ? getImageUrl(game.cover.image_id, 'cover_big') : null;
-  
+export function GameCard({
+  game,
+  showReleaseDate = false,
+  className,
+}: GameCardProps) {
+  const { theme } = useTheme();
+  const coverUrl = game.cover
+    ? getImageUrl(game.cover.image_id, "cover_big")
+    : null;
+
   return (
-    <Link 
+    <Link
       href={`/game/${game.id}/${createSlug(game.name)}`}
       className={cn(
-        'group block bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1',
+        `group block ${
+          theme === "dark" ? "light" : "dark"
+        } rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-dark-600`,
         className
       )}
     >
@@ -33,17 +44,19 @@ export function GameCard({ game, showReleaseDate = false, className }: GameCardP
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
         ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-500 text-sm">No cover</span>
+          <div className="w-full h-full bg-gray-200 dark:bg-dark-700 flex items-center justify-center">
+            <span className="text-gray-500 dark:text-gray-400 text-sm">
+              No cover
+            </span>
           </div>
         )}
       </div>
       <div className="p-3">
-        <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <h3 className="font-semibold text-sm !inverted-theme line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
           {game.name}
         </h3>
         {showReleaseDate && game.first_release_date && (
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {formatDate(game.first_release_date)}
           </p>
         )}
@@ -55,8 +68,8 @@ export function GameCard({ game, showReleaseDate = false, className }: GameCardP
 function createSlug(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
     .trim();
 }

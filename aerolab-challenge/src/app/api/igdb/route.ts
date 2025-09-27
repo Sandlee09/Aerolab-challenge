@@ -13,7 +13,6 @@ export async function getAccessToken(): Promise<string> {
   );
 
   if (!clientId || !clientSecret) {
-    console.error("Missing IGDB credentials");
     throw new Error("IGDB API credentials not configured");
   }
 
@@ -110,7 +109,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Handle CORS preflight requests
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
