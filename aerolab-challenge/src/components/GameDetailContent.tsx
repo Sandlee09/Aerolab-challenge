@@ -8,7 +8,7 @@ import { getImageUrl } from "@/lib/igdb";
 import { formatDate, getYearsAgo } from "@/lib/utils";
 import { useGameCollection } from "@/hooks/useGameCollection";
 import { GameCard } from "./GameCard";
-import { Star, Calendar, Gamepad2, Plus, Minus, Play } from "lucide-react";
+import { Star, Calendar, Gamepad2, Plus, Minus } from "lucide-react";
 import { ImageGallery } from "./ImageGallery";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ export function GameDetailContent({
   const { addGame, removeGame, isInCollection, isClient } = useGameCollection();
   const [showNotification, setShowNotification] = useState<string | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [galleryIndex] = useState(0);
 
   const isCollected = isClient ? isInCollection(game.id) : false;
   const coverUrl = game.cover
@@ -45,11 +45,6 @@ export function GameDetailContent({
 
     // Hide notification after 3 seconds
     setTimeout(() => setShowNotification(null), 3000);
-  };
-
-  const openGallery = (index: number) => {
-    setGalleryIndex(index);
-    setIsGalleryOpen(true);
   };
 
   const closeGallery = () => {

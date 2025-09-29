@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getGameDetails, getSimilarGames, getImageUrl } from "@/lib/igdb";
 import { GameDetailContent } from "@/components/GameDetailContent";
-import { useTheme } from "next-themes";
 
 interface GameDetailPageProps {
   params: Promise<{
