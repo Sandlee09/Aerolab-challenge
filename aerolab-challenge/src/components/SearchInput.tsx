@@ -11,13 +11,11 @@ import { useRouter } from "next/navigation";
 import { useLoading } from "@/contexts/LoadingContext";
 
 interface SearchInputProps {
-  onGameSelect?: (game: SearchResult) => void;
   placeholder?: string;
   className?: string;
 }
 
 export function SearchInput({
-  onGameSelect,
   placeholder = "Search for games...",
   className,
 }: SearchInputProps) {
@@ -69,7 +67,7 @@ export function SearchInput({
         }
       }
     }, 500),
-    [setResults, setIsLoading]
+    []
   );
 
   // Handle input change
@@ -91,21 +89,24 @@ export function SearchInput({
   };
 
   // Handle game selection
-  const handleGameSelect = (game: SearchResult) => {
-    setQuery("");
-    setResults([]);
-    setIsOpen(false);
-    // Cancel any pending requests
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+  const handleGameSelect = useCallback(
+    (game: SearchResult) => {
+      setQuery("");
+      setResults([]);
+      setIsOpen(false);
+      // Cancel any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-    // Start navigation loading
-    startNavigationLoading("Loading game...");
+      // Start navigation loading
+      startNavigationLoading("Loading game...");
 
-    const slug = createSlug(game.name);
-    router.push(`/game/${game.id}/${slug}`);
-  };
+      const slug = createSlug(game.name);
+      router.push(`/game/${game.id}/${slug}`);
+    },
+    [startNavigationLoading, router]
+  );
 
   // Handle clear
   const handleClear = () => {

@@ -1,8 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getGameDetails, getSimilarGames, getImageUrl } from "@/lib/igdb";
 import { GameDetailContent } from "@/components/GameDetailContent";
-import { createSlug } from "@/lib/utils";
-import { SearchInput } from "@/components/SearchInput";
+import { useTheme } from "next-themes";
 
 interface GameDetailPageProps {
   params: Promise<{
@@ -14,52 +13,38 @@ interface GameDetailPageProps {
 export async function generateMetadata({ params }: GameDetailPageProps) {
   try {
     const { id } = await params;
-    const gameId = parseInt(id);
-
-    if (isNaN(gameId)) {
-      return {
-        title: "Invalid Game ID",
-      };
-    }
-
-    const game = await getGameDetails(gameId);
+    const game = await getGameDetails(parseInt(id));
 
     if (!game) {
       return {
         title: "Game Not Found",
+        description: "The requested game could not be found.",
       };
     }
 
-    const coverUrl = game.cover
-      ? getImageUrl(game.cover.image_id, "cover_big")
-      : null;
-
     return {
-      title: `${game.name} - Aerolab Game Collection`,
-      description:
-        game.summary ||
-        `Discover ${game.name} and add it to your game collection.`,
+      title: `${game.name} - Game Details`,
+      description: game.summary || `View details for ${game.name}`,
       openGraph: {
         title: game.name,
-        description:
-          game.summary ||
-          `Discover ${game.name} and add it to your game collection.`,
-        images: coverUrl ? [{ url: coverUrl }] : [],
-        type: "website",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: game.name,
-        description:
-          game.summary ||
-          `Discover ${game.name} and add it to your game collection.`,
-        images: coverUrl ? [coverUrl] : [],
+        description: game.summary || `View details for ${game.name}`,
+        images: game.cover
+          ? [
+              {
+                url: getImageUrl(game.cover.image_id, "cover_big"),
+                width: 264,
+                height: 374,
+                alt: game.name,
+              },
+            ]
+          : [],
       },
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Game Not Found",
+      title: "Game Details",
+      description: "View game details",
     };
   }
 }
@@ -70,44 +55,39 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
     const gameId = parseInt(id);
 
     if (isNaN(gameId)) {
-      console.error("Invalid game ID:", id);
       notFound();
     }
 
-    console.log("Fetching game details for ID:", gameId, "with slug:", slug);
     const game = await getGameDetails(gameId);
 
     if (!game) {
-      console.error("Game not found for ID:", gameId);
       notFound();
     }
 
-    console.log("Found game:", game.name);
+    // Verify slug matches
+    const expectedSlug = game.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-    // Create the expected slug and compare
-    const actualSlug = createSlug(game.name);
-    console.log("Slug comparison:", { expected: slug, actual: actualSlug });
-
-    // If slug doesn't match, redirect to the correct URL
-    if (actualSlug !== slug) {
-      console.log("Redirecting to correct slug:", actualSlug);
-      redirect(`/game/${gameId}/${actualSlug}`);
+    if (slug !== expectedSlug) {
+      redirect(`/game/${gameId}/${expectedSlug}`);
     }
 
     // Get similar games
     const similarGames = game.similar_games
-      ? await getSimilarGames(game.similar_games)
+      ? await getSimilarGames(game.similar_games.slice(0, 6))
       : [];
 
     return (
-      <>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
           <GameDetailContent game={game} similarGames={similarGames} />
         </div>
-      </>
+      </div>
     );
   } catch (error) {
-    console.error("Error in GameDetailPage:", error);
+    console.error("Error loading game details:", error);
     notFound();
   }
 }

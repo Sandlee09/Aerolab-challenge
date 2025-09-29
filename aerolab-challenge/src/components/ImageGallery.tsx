@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,14 @@ export function ImageGallery({
   initialIndex = 0,
 }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  const goToPrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [images.length]);
+
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  }, [images.length]);
 
   // Reset index when gallery opens
   useEffect(() => {
@@ -53,7 +61,7 @@ export function ImageGallery({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, goToNext, goToPrevious, onClose]);
 
   // Handle touch/swipe gestures
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -82,14 +90,6 @@ export function ImageGallery({
     } else if (isRightSwipe) {
       goToPrevious();
     }
-  };
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   if (!isOpen || images.length === 0) return null;

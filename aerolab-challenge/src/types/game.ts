@@ -4,6 +4,7 @@ export interface Game {
   summary?: string;
   rating?: number;
   rating_count?: number;
+  dateAdded?: number | string;
   first_release_date?: number;
   cover?: {
     id: number;
